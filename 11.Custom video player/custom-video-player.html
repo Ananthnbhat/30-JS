@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Custom Video Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="style2.css"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        html {
+            box-sizing: border-box;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        .parent {
+            margin-top: 0;
+            padding-top: 7px;
+            display: flex;
+            background: #7A419B;
+            min-height: 100vh;
+            /* background: linear-gradient(135deg, #a1fcdf 0%, #fcdeb9 48%, #fcab64 100%); */
+            background: linear-gradient(135deg, #fcdeb9 0%, #fcab64 48%, #388697 90%);
+            background-size: cover;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+        }
+
+        .player {
+            width: 40%;
+            float: left;
+            background-color: black;
+        }
+
+        .playlist {
+            width: 50%;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid transparent;
+            background-color: black;
+            padding: 20px;
+            opacity: 0.2;
+            transition: all .3s;
+        }
+
+        #controls:hover {
+            opacity: 0.8;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-evenly;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #progress-bar {
+            margin-top: 10px;
+            width: 100%;
+            height: 15px;
+            background: #ffefdb;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all cubic-bezier(0.55, 0.085, 0.68, 0.53);
+        }
+
+        progress {
+            border: none;
+            background: black;
+            border-radius: 5px;
+
+        }
+
+        progress {
+            color: lightblue;
+        }
+
+        progress::-webkit-progress-value {
+            background: #ffefdb;
+            border-radius: 4px;
+        }
+
+        progress::-moz-progress-bar {
+            background: #fcab64;
+        }
+
+
+        progress::-webkit-progress-bar {
+            background: #ff9232;
+            border-radius: 4px;
+        }
+
+        .btn {
+            margin: 4px;
+        }
+
+        .videos {
+            cursor: pointer;
+            color: brown;
+            text-decoration: none !important;
+            padding-top: 1.5em;
+
+        }
+
+        .videos:hover {
+            text-decoration: none !important;
+            cursor: pointer;
+            color: #036176;
+        }
+
+        #likesCount {
+            color: rgb(17, 176, 17);
+            margin-top: 5px;
+            margin-left: -5px;
+        }
+
+        #dislikesCount {
+            color: red;
+            margin-top: 5px;
+            margin-left: -5px;
+        }
+
+        .playListButton {
+            opacity: 0.5;
+        }
+
+        @media only screen and (max-width: 968px) {
+            .parent {
+                flex-direction: column;
+            }
+
+            .player {
+                width: 350px;
+            }
+
+            .playlist {
+                position: relative;
+                /* top: 10em; */
+                width: 70%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="parent">
+        <div class="player">
+            <div class="embed-responsive embed-responsive-16by9">
+                <video id="viewer" class="embed-responsive-item">
+                    <source id="videoSource"
+                        src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                        type="video/mp4">
+                </video>
+            </div>
+            <div id='controls'>
+                <!-- <button id='btnReplay' class='replay' title='replay' accesskey="R" onclick='replayVideo();'>Replay</button> -->
+                <!-- <button id='btnPlayPause' class='play' title='play' accesskey="P" onclick='playPauseVideo();'>Play</button> -->
+                <!-- <button id='btnStop' class='stop' title='stop' accesskey="X" onclick='stopVideo();'>Stop</button> -->
+                <div class="buttons">
+                    <button type="button" class="btn btn-default btn-xs play">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs pause">
+                        <span class="glyphicon glyphicon-pause"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs reset">
+                        <span class="glyphicon glyphicon-repeat"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs plus">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs minus">
+                        <span class="glyphicon glyphicon-minus"></span>
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs mute">
+                        <span class="glyphicon glyphicon-headphones"></span>
+                    </button>
+                    <button type="button" class="btn btn-success btn-xs thumbsUp">
+                        <span class="glyphicon glyphicon-thumbs-up"></span>
+                    </button>
+                    <span id="likesCount">0</span>
+                    <button type="button" class="btn btn-danger btn-xs thumbsDown">
+                        <span class="glyphicon glyphicon-thumbs-down"></span>
+                    </button>
+                    <span id="dislikesCount">0</span>
+                </div>
+                <div>
+                    <progress id='progress-bar' min='0' max='100' value='30'>0% played</progress>
+                </div>
+            </div>
+        </div>
+        <div class="playlist">
+            <div class="echo" style="text-align: center"></div>
+            <h3 style="text-align:center">Playlist</h3>
+            <ul>
+                <p class="videos" id="video0"><button type="button" class="btn btn-default btn-xs playListButton">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    Big Buck Bunny tells the story of a giant rabbit with a heart bigger than himself.
+                </p>
+                <p class="videos" id="video1"><button type="button" class="btn btn-default btn-xs playListButton">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    The first Blender Open Movie from 2006.
+                </p>
+                <p class="videos" id="video2"><button type="button" class="btn btn-default btn-xs playListButton">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    HBO GO now works with Chromecast -- the easiest way to enjoy online video on your TV.
+                </p>
+                <p class="videos" id="video3"><button type="button" class="btn btn-default btn-xs playListButton">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    Sintel is an independently produced short film, initiated by the Blender Foundation.
+                </p>
+                <p class="videos" id="video4"><button type="button" class="btn btn-default btn-xs playListButton">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    Tears of Steel was realized with crowd-funding by users of the open source 3D creation tool
+                    Blender.
+                </p>
+                <!-- <button class="btn btn-danger btn-sm" id="clearStorage">Clear local storage</button> -->
+            </ul>
+        </div>
+    </div>
+    <!-- <script src="script2.js"></script> -->
+    <script>
+        const parent = document.querySelector('.parent');
+        const video = document.getElementById('viewer');
+        const play = parent.querySelector('.play');
+        const pause = parent.querySelector('.pause');
+        const mute = parent.querySelector('.mute')
+        const plus = parent.querySelector('.plus');
+        const minus = parent.querySelector('.minus');
+        const reset = parent.querySelector('.reset');
+        let progressBar = document.getElementById('progress-bar');
+        let videoLinks = document.querySelectorAll('.videos');
+        const videoSource = document.querySelector('#videoSource');
+        let thumbsUp = parent.querySelector('.thumbsUp');
+        let thumbsDown = parent.querySelector('.thumbsDown');
+        let likes = document.getElementById('likesCount')
+        let disLikes = document.getElementById('dislikesCount')
+        const clearLocalStorage = document.getElementById('clearStorage');
+        let echo = parent.querySelector('.echo');
+
+        let countOfLikes = localStorage.getItem('likes');
+        // let countOfLikes = 0
+        let countOfDislikes = localStorage.getItem('disLikes');
+        // let countOfDislikes = 0;
+
+        likes.innerHTML = localStorage.getItem('likes');
+        disLikes.innerHTML = localStorage.getItem('disLikes');
+
+        const allVideoLinks = [{
+            index: 0,
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        },
+        {
+            index: 1,
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+        },
+        {
+            index: 2,
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+        },
+        {
+            index: 3,
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+        },
+        {
+            index: 4,
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+        }
+        ]
+
+        pause.setAttribute("disabled", "true")
+        video.muted = false;
+
+        displayEvent = (str, time) => {
+            echo.innerHTML = str;
+            setTimeout(() => {
+                echo.innerHTML = "";
+            }, time);
+        }
+
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                play.setAttribute("disabled", "true");
+                pause.removeAttribute("disabled");
+                displayEvent("Playing the video...", 2000)
+            }
+            else {
+                video.pause();
+                play.removeAttribute("disabled");
+                pause.setAttribute("disabled", "true");
+                displayEvent("Video paused", 500)
+            }
+        }
+        function videoStart() {
+            togglePlay();
+        }
+
+        function videoPause() {
+            togglePlay();
+        }
+
+        toggleMute = () => {
+            if (video.muted) {
+                video.muted = false;
+                displayEvent("Volume unmuted", 500)
+            }
+            else {
+                video.muted = true;
+                displayEvent("Volume muted", 500)
+            }
+        }
+
+        incVol = () => {
+            video.volume < 1 ? video.volume = video.volume + 0.1 : null;
+            displayEvent("Volume Up", 200);
+        }
+        decVol = () => {
+            video.volume > 0 ? video.volume = video.volume - 0.1 : null;
+            displayEvent("Volume Down", 200);
+        }
+
+        repeat = () => {
+            progressBar.value = 0;
+            video.currentTime = 0;
+            video.play();
+            displayEvent("Video restarted...", 1000)
+        }
+        playThisVideo = (index) => {
+            videoSource.src = allVideoLinks[index].url;
+            video.load();
+            progressBar.value = 0;
+            togglePlay();
+            return false;
+        }
+
+        playRespectiveVideo = (index) => {
+            const videoId = videoLinks[index].getAttribute("id");
+            // console.log(videoId);
+            switch (videoId) {
+                case "video0": playThisVideo(0);
+                    break;
+                case "video1": playThisVideo(1);
+                    break;
+                case "video2": playThisVideo(2);
+                    break;
+                case "video3": playThisVideo(3);
+                    break;
+                case "video4": playThisVideo(4);
+                    break;
+                default: playThisVideo(0);
+            }
+        }
+
+        for (let i = 0; i < videoLinks.length; i++) {
+            videoLinks[i].addEventListener("click", function () {
+                console.log("you clicked region number " + i);
+                playRespectiveVideo(i);
+            });
+        }
+
+        incLikes = () => {
+            countOfLikes++;
+            localStorage.setItem('likes', countOfLikes);
+            likes.innerHTML = countOfLikes;
+        }
+        incDislikes = () => {
+            countOfDislikes++;
+            localStorage.setItem('disLikes', countOfDislikes);
+            disLikes.innerHTML = countOfDislikes;
+        }
+
+        updateProgressBar = () => {
+            var percentage = Math.floor((100 / video.duration) * video.currentTime);
+            // Update the progress bar's value
+            progressBar.value = percentage;
+            // Update the progress bar's text (for browsers that don't support the progress element)
+            progressBar.innerHTML = percentage + '% played';
+        }
+
+        clearTheLocalStorage = () => {
+            localStorage.clear();
+            localStorage.setItem('likes', 0);
+            localStorage.setItem('disLikes', 0);
+            likes.innerHTML = 0;
+            disLikes.innerHTML = 0;
+        }
+        video.addEventListener('click', togglePlay);
+        play.addEventListener('click', videoStart);
+        pause.addEventListener('click', videoPause)
+        mute.addEventListener('click', toggleMute);
+        plus.addEventListener('click', incVol);
+        minus.addEventListener('click', decVol);
+        reset.addEventListener('click', repeat);
+        thumbsUp.addEventListener('click', incLikes);
+        thumbsDown.addEventListener('click', incDislikes);
+        video.addEventListener('timeupdate', updateProgressBar, false);
+// clearLocalStorage.addEventListener('click', clearTheLocalStorage);
+
+
+    </script>
+
+</body>
+
+</html>
