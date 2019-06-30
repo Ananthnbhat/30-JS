@@ -38,7 +38,7 @@
         .player {
             width: 50%;
             float: left;
-            margin-left:5%;
+            margin-left: 5%;
             background-color: black;
         }
 
@@ -343,6 +343,8 @@
         repeat = () => {
             progressBar.value = 0;
             video.currentTime = 0;
+            play.setAttribute("disabled", "true");
+            pause.removeAttribute("disabled");
             video.play();
             displayEvent("Video restarted...", 1000)
         }
